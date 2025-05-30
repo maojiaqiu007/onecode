@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>巷道模拟</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="tunnelCanvas" width="500" height="500"></canvas>
+
+    <script>
+        // 获取Canvas元素和绘图上下文
+        const canvas = document.getElementById('tunnelCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 计算巷道线条的位置
+        const centerX = canvas.width / 2;
+        const lineWidth = 5;
+        const spacing = 80;
+        const leftLineX = centerX - spacing / 2 - lineWidth / 2;
+        const rightLineX = centerX + spacing / 2 - lineWidth / 2;
+
+        // 设置线条样式
+        ctx.strokeStyle = 'blue';
+        ctx.lineWidth = lineWidth;
+
+        // 绘制左线
+        ctx.beginPath();
+        ctx.moveTo(leftLineX, 0);
+        ctx.lineTo(leftLineX, canvas.height);
+        ctx.stroke();
+
+        // 绘制右线
+        ctx.beginPath();
+        ctx.moveTo(rightLineX, 0);
+        ctx.lineTo(rightLineX, canvas.height);
+        ctx.stroke();
+
+        // 封装绘制圆点的函数
+        function drawDot(x, y, radius, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // 封装绘制圆圈的函数
+        function drawCircle(x, y, radius, color, lineWidth) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // 封装绘制直线的函数
+        function drawLine(x1, y1, x2, y2, color, lineWidth) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        // 封装显示甲烷浓度文字的函数
+        function showMethaneConcentration(x, y, color, value) {
+            ctx.fillStyle = color;
+            ctx.font = '15px Arial';
+            ctx.fillText(`甲烷浓度: ${value}%`, x, y);
+        }
+
+        // 圆点和圆圈的参数
+        const dotY1 = 180; // 距离顶部240像素
+        const dotX1 = leftLineX + 70; // 距离左侧巷道边线20像素
+        const dotRadius1 = 5; // 半径10像素（直径20像素）
+
+        const dotY2 = 280; // 距离顶部260像素
+        const dotX2 = leftLineX + 10; // 距离左侧巷道边线30像素
+        const dotRadius2 = 5; // 半径10像素（直径20像素）
+
+        const circleY = 220; // 距离顶部220像素
+        const circleX = leftLineX + 40; // 距离左侧巷道边线5像素
+        const circleTargetRadius = 25; // 目标半径25像素（直径50像素）
+
+        let dotVisible1 = true;
+        let dotVisible2 = true;
+        let circleRadius = 1;
+        let increasing = true;
+        let methaneConcentration = 1.5; // 初始甲烷浓度
+
+        // 动画函数
+        function animate() {
+            // 清除画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 重新绘制巷道线条
+            ctx.strokeStyle = 'blue';
+            ctx.lineWidth = lineWidth;
+            ctx.beginPath();
+            ctx.moveTo(leftLineX, 0);
+            ctx.lineTo(leftLineX, canvas.height);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(rightLineX, 0);
+            ctx.lineTo(rightLineX, canvas.height);
+            ctx.stroke();
+
+            // 绘制圆点
+            if (dotVisible1) {
+                drawDot(dotX1, dotY1, dotRadius1, 'blue');
+            }
+            if (dotVisible2) {
+                drawDot(dotX2, dotY2, dotRadius2, 'blue');
+            }
+
+            // 绘制圆圈
+            drawCircle(circleX, circleY, circleRadius, 'green', 3);
+            drawDot(circleX, circleY, 3, 'green');
+           
+             
+
+            // 绘制圆点到圆圈中心的直线
+            if (dotVisible1) {
+                drawLine(dotX1, dotY1, circleX, circleY, 'blue', 1);
+            }
+            if (dotVisible2) {
+                drawLine(dotX2, dotY2, circleX, circleY, 'blue', 1);
+            }
+
+            // 显示甲烷浓度文字
+            showMethaneConcentration(circleX+60, circleY+10, 'black', methaneConcentration);
+
+            // 更新圆点的可见性
+            //dotVisible1 = !dotVisible1;
+            //dotVisible2 = !dotVisible2;
+
+            // 更新圆圈的半径
+            if (increasing) {
+                circleRadius = circleRadius + 2;
+                if (circleRadius >= circleTargetRadius) {
+                    increasing = false;
+                }
+            } else {
+                circleRadius = circleRadius - 5;
+                if (circleRadius <= 1) {
+                    increasing = true;
+                }
+            }
+
+            // 更新甲烷浓度（这里简单模拟浓度变化）
+            methaneConcentration += (Math.random() - 0.5) * 0.1;
+            
+            methaneConcentration = Math.max(0, Math.min(100, methaneConcentration.toFixed(2)));
+        }
+
+        // 每隔一段时间调用一次动画函数
+        setInterval(animate, 100);
+    </script>
+</body>
+</html>
